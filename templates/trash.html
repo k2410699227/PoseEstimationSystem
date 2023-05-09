@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+  <style>
+
+  .container {
+    background-color: rgb(48, 46, 46);
+    width: 400px; /* 设置容器的宽度 */
+    height: 400px; /* 设置容器的高度 */
+    overflow: hidden; /* 隐藏溢出的内容 */
+    object-position: center;
+  }
+  
+  img {
+    width: 100%; /* 设置图片的宽度为容器的宽度 */
+    height: 100%; /* 设置图片的高度为容器的高度 */
+    object-fit: contain; /* 将图片自适应大小，并完全显示内容 */
+    object-position: center; /* 将图片置于容器的中心位置 */
+  }
+  </style>
+  
+
+<body>
+    <div class="container">
+        <img src="image.jpg" alt="Image">
+    </div>
+
+
+
+</body>
+
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+
+<body >
+
+</body>
+<!-- import Vue before Element -->
+<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+    // 列举可用的媒体输入设备
+    async function enumerateDevices() {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        return videoDevices;
+    }
+
+    // 获取用户摄像头输入流
+    async function getUserMedia(selectedDeviceId) {
+        const constraints = {
+            video: { deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined }
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        return stream;
+    }
+
+    // 用户选择摄像头设备
+    async function selectCamera() {
+        const videoDevices = await enumerateDevices();
+        const selectedDeviceId = await showCameraSelectionDialog(videoDevices);
+        const stream = await getUserMedia(selectedDeviceId);
+        return stream;
+    }
+
+    // 显示摄像头选择对话框
+    function showCameraSelectionDialog(devices) {
+        return new Promise(resolve => {
+            console.log("select");
+            const dialog = document.createElement('div');
+            dialog.innerHTML = `
+      <div>
+        <label for="camera-select">选择摄像头：</label>
+        <select id="camera-select">
+          ${devices.map(device => `<option value="${device.deviceId}">${device.label}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <button id="ok-button">确定</button>
+      </div>
+    `;
+            const okButton = dialog.querySelector('#ok-button');
+            const select = dialog.querySelector('#camera-select');
+            okButton.addEventListener('click', () => {
+                dialog.remove();
+                resolve(select.value);
+            });
+            document.body.appendChild(dialog);
+        });
+    }
+
+    // 调用选择摄像头方法
+    selectCamera().then(stream => {
+        // 获取到摄像头输入流，可以进行后续处理
+        var video = document.createElement("video")
+        // video.setAttribute("style","width: 300px;height: 300px;")
+        document.body.append(video)
+        video.srcObject = stream
+        video.play()
+        console.log(video);
+    }).catch(error => {
+        console.error(error);
+    });
+
+</script>
+
+</html>
