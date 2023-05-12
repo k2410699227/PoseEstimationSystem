@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
 </head>
 
-<body >
+<body>
 
 </body>
 <!-- import Vue before Element -->
@@ -15,9 +15,11 @@
 <!-- import JavaScript -->
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 <script>
+
     // 列举可用的媒体输入设备
     async function enumerateDevices() {
         const devices = await navigator.mediaDevices.enumerateDevices();
+        // console.log(devices)
         const videoDevices = devices.filter(device => device.kind === 'videoinput');
         return videoDevices;
     }
@@ -34,15 +36,18 @@
     // 用户选择摄像头设备
     async function selectCamera() {
         const videoDevices = await enumerateDevices();
+
+        console.log(videoDevices)
         const selectedDeviceId = await showCameraSelectionDialog(videoDevices);
         const stream = await getUserMedia(selectedDeviceId);
+        console.log("id: ", selectedDeviceId)
         return stream;
     }
 
     // 显示摄像头选择对话框
     function showCameraSelectionDialog(devices) {
         return new Promise(resolve => {
-            console.log("select");
+            // console.log("select");
             const dialog = document.createElement('div');
             dialog.innerHTML = `
       <div>
@@ -73,7 +78,7 @@
         document.body.append(video)
         video.srcObject = stream
         video.play()
-        console.log(video);
+        // console.log(video);
     }).catch(error => {
         console.error(error);
     });

@@ -5,6 +5,8 @@ import time
 import cv2
 import torch
 from PIL import Image
+
+from adet.modeling.one_stage_detector import OneStageDetector
 from detectron2.data.detection_utils import read_image
 from flask import Flask, render_template, Response
 from flask_socketio import SocketIO, emit, send
@@ -13,45 +15,49 @@ from predictor import VisualizationDemo
 
 app = Flask(__name__, template_folder='templates', static_url_path='/static', static_folder='templates')
 socketio = SocketIO(app, cors_allowed_origins='*')
+
 # socketio.init_app(app,)
 # cap = cv2.VideoCapture(0)  # 打开摄像头（如果要处理视频文件，请提供文件路径）
 
 paths = ['./test/' + i for i in os.listdir('test')][:5]
 device = 'cuda'
+pretrained_model = "model/" + "fcpose_res50.pth"
+model = torch.load(pretrained_model).to(device)
 
-model = torch.load("fcpose_res50.pth").to(device)
+if isinstance(model, OneStageDetector):
+    print(True)
+    model.proposal_generator.fcos.fcos_outputs.pre_nms_thresh_test = 0.5
 demo = VisualizationDemo(model)
 
 
 @app.route('/')
 def index():
-    # global model
-    # model = None
     return render_template('index.html')
 
 
-def generate_frames():
-    frame = cv2.imread("kun.jpg")
-    for path in paths:
-        img = read_image(path, format="BGR")
-        start_time = time.time()
-        predictions, visualized_output = demo.run_on_image(img)
-
-        print("{}: detected {} instances in {:.2f}s".format(path, len(predictions["instances"]),
-                                                            time.time() - start_time))
-        # cv2.imwrite(path.replace(".jpg", "_res.jpg").replace("test", "test_result"),visualized_output.get_image()[:, :, ::-1])
-
-        ret, buffer = cv2.imencode('.jpeg', visualized_output.get_image()[:, :, ::-1])
-        frame = buffer.tobytes()
-        # time.sleep(0.5)
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-
-@app.route('/video')
-def video_feed():
-    return Response(generate_frames(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+#
+# def generate_frames():
+#     frame = cv2.imread("kun.jpg")
+#     for path in paths:
+#         img = read_image(path, format="BGR")
+#         start_time = time.time()
+#         predictions, visualized_output = demo.run_on_image(img)
+#
+#         print("{}: detected {} instances in {:.2f}s".format(path, len(predictions["instances"]),
+#                                                             time.time() - start_time))
+#         # cv2.imwrite(path.replace(".jpg", "_res.jpg").replace("test", "test_result"),visualized_output.get_image()[:, :, ::-1])
+#
+#         ret, buffer = cv2.imencode('.jpeg', visualized_output.get_image()[:, :, ::-1])
+#         frame = buffer.tobytes()
+#         # time.sleep(0.5)
+#         yield (b'--frame\r\n'
+#                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+#
+#
+# @app.route('/video')
+# def video_feed():
+#     return Response(generate_frames(),
+#                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @socketio.on('connect')
@@ -72,8 +78,6 @@ def handle_image(data):
     global i
     i += 1
     # Process the image data here
-    # print(type(data['data']))
-    # image = Image.open(io.BytesIO(data['data']))
     image = bytes_to_BGRImg(data['data'])
 
     start_time = time.time()
@@ -86,9 +90,7 @@ def handle_image(data):
     _, buffer = cv2.imencode('.jpeg', visualized_output.get_image()[:, :, ::-1])
     frame = buffer.tobytes()
 
-    # time.sleep(2)
     return {'pose': frame}
-    # emit('pose', {'pose': "hello world!"})
 
 
 if __name__ == '__main__':

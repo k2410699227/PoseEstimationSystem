@@ -39,7 +39,7 @@
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 <script src="https://unpkg.com/socket.io-client@4.6.0/dist/socket.io.min.js"></script>
 <script>
-
+  var domain = window.location.host;
   new Vue({
     el: '#app',
     data: function () {
@@ -54,13 +54,20 @@
     },
     mounted: function () {
 
-      this.ws = io("ws://172.19.72.95:666");
+      this.ws = io("ws://" + domain);
       this.ws.on("connect", () => {
-        console.log(this.ws.id + " WebSocket连接已打开"); // x8WIv7-mJelg7on_ALbx
-      });
+        console.log(`已连接至${domain}`);
 
+      });
+      const constraints = {
+        video: {
+          deviceId: { exact: "7fc8c5eac9511548a21c06451e60186b6ebf7ded2560761bba68729994bb3b9d" }
+        }
+      }
+      const devices = navigator.mediaDevices.enumerateDevices();
+      console.log(devices)
       // 获取摄像头并设置video元素
-      navigator.mediaDevices.getUserMedia({ video: true })
+      navigator.mediaDevices.getUserMedia(constraints)
         .then(stream => {
 
           const canvas = document.createElement('canvas')
@@ -91,15 +98,14 @@
               return;
             }
             ctx.drawImage(this.video, 0, 0, canvas.width, canvas.height)
-            // console.log(canvas.width, canvas.height, this.origin_width, this.origin_height)
+
             // this.imageUrl = canvas.toDataURL()
             // setTimeout(() => { console.log("sleep"); requestAnimationFrame(drawFrame) }, 100);
             canvas.toBlob((blob) => {
               this.ws.emit("image", { data: blob }, (response) => {
-
+                // console.log(canvas.width, canvas.height, response)
                 resblob = new Blob([response.pose], { type: 'image/jpeg' });
                 url = URL.createObjectURL(resblob);
-                console.log(response, url);
                 this.imageUrl = url
                 // URL.revokeObjectURL(url);
                 requestAnimationFrame(drawFrame)
@@ -110,6 +116,8 @@
             // setTimeout(()=>{requestAnimationFrame(drawFrame)},8000)
           }
           requestAnimationFrame(drawFrame)
+        }).catch(error => {
+          console.error(error);
         })
 
     },
