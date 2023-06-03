@@ -1,6 +1,8 @@
 import torch
 import time
 import torch.nn.functional as F
+from adet.modeling import OneStageDetector
+
 from transform import Transform
 from predictor import Predictor
 from visualizer import Visualizer
