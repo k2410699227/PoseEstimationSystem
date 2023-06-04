@@ -1,27 +1,8 @@
 import argparse
-import io
-import json
-import os
-import time
 
-import cv2
 import torch
-from PIL import Image
-
-from adet.modeling.one_stage_detector import OneStageDetector
-from detectron2.data.detection_utils import read_image
-from flask import Flask, render_template, Response
-from flask_socketio import SocketIO, emit, send
-from utils import *
 
 from server import Server
-
-# socketio.init_app(app,)
-# cap = cv2.VideoCapture(0)  # 打开摄像头（如果要处理视频文件，请提供文件路径）
-
-paths = ['./test/' + i for i in os.listdir('test')][:5]
-device = 'cuda'
-pretrained_model = "model/" + "fcpose_res50.pth"
 
 
 def get_args():

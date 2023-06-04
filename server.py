@@ -5,7 +5,6 @@ import cv2
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 
-# from predictor import PoseEstimation
 from pose_estimation import PoseEstimation
 from utils import bytes_to_BGRImg
 

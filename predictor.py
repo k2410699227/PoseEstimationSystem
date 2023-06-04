@@ -1,22 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-import numpy as np
-import atexit
-import bisect
-import multiprocessing as mp
-from collections import deque
-import cv2
 import torch
-import matplotlib.pyplot as plt
 from adet.modeling import OneStageDetector
-
-from detectron2.data import MetadataCatalog
-from detectron2.engine.defaults import DefaultPredictor
-from detectron2.utils.video_visualizer import VideoVisualizer
-from detectron2.utils.visualizer import ColorMode, Visualizer
-
-from adet.utils.visualizer import TextVisualizer
-from new_predictor import MyPredictor
-from utils import *
 
 
 class Predictor:
