@@ -6,31 +6,46 @@
   <link rel="icon" href="/static/favicon.ico">
   <!-- import CSS -->
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
-  <link rel="stylesheet" href="/static/PoseEstimation.css">
+  <link rel="stylesheet" href="/static/video.css">
 </head>
 
-<body style="background-color: rgb(0, 0, 0);">
-  <div id="app">
+<body style="background-color: rgb(0, 0, 0); text-align: center;">
+  <div id="app" class="app">
+    <el-container>
+      <template>
+        <el-header height="30px">
+          <div>实时视频流-{% raw %}{{ source }}{% endraw %}</div>
+          <el-link href="/image" type="primary" style=" position:absolute;  right:5px;">图片</el-link>
+        </el-header>
+      </template>
+      <el-main>
+        <el-container direction="vertical" class="img-container">
+          <div class="container">
+            <img :src="imageUrl"></img>
+          </div>
+          <el-row><el-button :type="startBtnStatus()" @click="startBtnAction">{% raw %}{{buttonText}}{% endraw
+              %}</el-button></el-row>
+        </el-container>
+        <el-container class="ctrl-container">
+          <div class="block">
+            <span class="ctrl-label">置信度阈值</span>
+            <el-slider v-model="confident_threshold" :format-tooltip="formatTooltip" :step="10" show-stops
+              :marks="marks"></el-slider>
+          </div>
+          <el-checkbox style="color: whitesmoke;" v-model="no_box">不显示检测框</el-checkbox>
+          <el-checkbox style="color: whitesmoke;" v-model="no_prob">不显示概率</el-checkbox>
+          <el-select v-model="camera" placeholder="请选择摄像头" @change="onChangeDevice">
+            <el-option v-for="item in inputDevices" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+          <el-select v-model="picsize" placeholder="输入图像短边尺寸">
+            <el-option v-for="item in length" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
 
-    <div class="container">
-      <img :src="imageUrl">
-      <!-- <div slot="placeholder" class="image-slot"
-        style="background-color: darkgray;width: 100%;height: 100%;align-items: center;justify-content: center;display: flex">
-        加载中<span class="dot">...</span>
-      </div> -->
-      <!-- <div slot="error"
-        style="background-color: darkgray;width: 100%;height: 100%;align-items: center;justify-content: center;display: flex">
-        <i class="el-icon-picture-outline"></i>
-      </div> -->
-      </img>
-
-    </div>
-    <el-button @click="capture = !capture">Button</el-button>
-    <!-- <video ref="video"style="display: none;"></video> -->
-    <!-- <canvas ref="canvas"></canvas> -->
-    <!-- <el-dialog :visible.sync="visible" title="Hello world">
-      <p>Try Element</p>
-    </el-dialog> -->
+        </el-container>
+      </el-main>
+    </el-container>
   </div>
 </body>
 <!-- import Vue before Element -->
@@ -38,91 +53,8 @@
 <!-- import JavaScript -->
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 <script src="https://unpkg.com/socket.io-client@4.6.0/dist/socket.io.min.js"></script>
-<script>
-  var domain = window.location.host;
-  new Vue({
-    el: '#app',
-    data: function () {
-      return {
-        imageUrl: "",
-        origin_width: 0,
-        origin_height: 0,
-        ws: null,
-        video: null,
-        capture: false,
-      }
-    },
-    mounted: function () {
+<script src="/static/utils.js"></script>
+<script type="text/JavaScript" src="/static/video.js"></script>
 
-      this.ws = io("ws://" + domain);
-      this.ws.on("connect", () => {
-        console.log(`已连接至${domain}`);
-
-      });
-      const constraints = {
-        video: {
-          deviceId: { exact: "7fc8c5eac9511548a21c06451e60186b6ebf7ded2560761bba68729994bb3b9d" }
-        }
-      }
-      const devices = navigator.mediaDevices.enumerateDevices();
-      console.log(devices)
-      // 获取摄像头并设置video元素
-      navigator.mediaDevices.getUserMedia(constraints)
-        .then(stream => {
-
-          const canvas = document.createElement('canvas')
-          this.video = document.createElement('video')
-          this.video.setAttribute("style", "display: none;")
-          document.body.append(this.video)
-          // this.video = this.$refs.video
-          this.video.srcObject = stream
-          this.video.onloadedmetadata = () => {
-            this.origin_width = this.video.videoWidth
-            this.origin_height = this.video.videoHeight
-            canvas.width = this.video.videoWidth
-            canvas.height = this.video.videoHeight
-          };
-          this.video.play()
-
-          // 将视频流渲染到canvas元素中
-          // const canvas = this.$refs.canvas
-          canvas.setAttribute("style", "display: none;")
-          document.body.append(canvas)
-          const ctx = canvas.getContext('2d')
-
-
-          const drawFrame = () => {
-            console.log(this.capture)
-            if (!this.capture) {
-              requestAnimationFrame(drawFrame)
-              return;
-            }
-            ctx.drawImage(this.video, 0, 0, canvas.width, canvas.height)
-
-            // this.imageUrl = canvas.toDataURL()
-            // setTimeout(() => { console.log("sleep"); requestAnimationFrame(drawFrame) }, 100);
-            canvas.toBlob((blob) => {
-              this.ws.emit("image", { data: blob }, (response) => {
-                // console.log(canvas.width, canvas.height, response)
-                resblob = new Blob([response.pose], { type: 'image/jpeg' });
-                url = URL.createObjectURL(resblob);
-                this.imageUrl = url
-                // URL.revokeObjectURL(url);
-                requestAnimationFrame(drawFrame)
-              });
-            }, 'image/jpeg', 0.8);
-            // console.log(this.ws)
-
-            // setTimeout(()=>{requestAnimationFrame(drawFrame)},8000)
-          }
-          requestAnimationFrame(drawFrame)
-        }).catch(error => {
-          console.error(error);
-        })
-
-    },
-
-  })
-</script>
 
 </html>

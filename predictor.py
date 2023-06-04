@@ -19,7 +19,7 @@ from new_predictor import MyPredictor
 from utils import *
 
 
-class Predicter:
+class Predictor:
     def __init__(self, model, device=None):
         self.model = model
         if device is None:

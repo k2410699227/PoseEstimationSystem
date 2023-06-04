@@ -165,7 +165,7 @@ new Vue({
 
             this.canvas.toBlob((blob) => {
                 var start = Date.now()
-                emitWithTimeout(this.ws, "image", { data: blob, threshold: this.confident_threshold, no_box: this.no_box, no_prob: this.no_prob, short_edge: this.picsize }, 2500)
+                emitWithTimeout(this.ws, "image", { data: blob, threshold: this.confident_threshold, no_box: this.no_box, no_prob: this.no_prob, short_edge: this.picsize }, 5000)
                     .then((response) => {
                         console.log(Date.now() - start + "ms")
                         // console.log(canvas.width, canvas.height, response)

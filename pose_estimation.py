@@ -1,3 +1,4 @@
+import cv2
 import torch
 import time
 import torch.nn.functional as F
@@ -159,7 +160,7 @@ class PoseEstimation_One(object):
                     cv2.rectangle(image, box[:2], (box[0] + text_size[0], box[1] + text_size[1]), (0, 0, 0), -1)
                     cv2.putText(image, score, (box[0], box[1] + text_size[1]), font, font_scale, (0, 150, 180),
                                 thickness)
-            for rule in keypoint_connection_rules:
+            for rule in Visualizer.keypoint_connection_rules:
                 if exist_keypoints(keypoints, rule[0], rule[1]):
                     cv2.line(image, keypoints[rule[0]][:2], keypoints[rule[1]][:2], rule[2][::-1], 2 * scale_ratio)
 
